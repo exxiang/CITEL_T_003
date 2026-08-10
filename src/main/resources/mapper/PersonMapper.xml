@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.citel.statistics.mapper.PersonMapper">
+
+    <!-- 区间筛选条件（命中任一区间即满足；年龄模式转换为出生年份区间以命中索引） -->
+    <sql id="rangeFilter">
+        <foreach collection="ranges" item="r" open="(" separator=" OR " close=")">
+            <choose>
+                <when test="mode == 'age'">birth_year BETWEEN #{refYear} - #{r.max} AND #{refYear} - #{r.min}</when>
+                <when test="mode == 'mileage'">total_mileage BETWEEN #{r.min} AND #{r.max}</when>
+                <when test="mode == 'time'">total_travel_time BETWEEN #{r.min} AND #{r.max}</when>
+            </choose>
+        </foreach>
+    </sql>
+
+    <!-- 按多区间查询分页列表 -->
+    <select id="selectPageByRanges" resultType="com.citel.statistics.dto.vo.PersonVO">
+        SELECT id,
+               gender,
+               birth_year,
+               total_mileage,
+               total_travel_time,
+               #{refYear} - birth_year AS age
+        FROM person
+        <where>
+            <include refid="rangeFilter"/>
+        </where>
+        ORDER BY id
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 按多区间统计总数 -->
+    <select id="selectCountByRanges" resultType="long">
+        SELECT COUNT(*)
+        FROM person
+        <where>
+            <include refid="rangeFilter"/>
+        </where>
+    </select>
+
+    <!-- 逐区间统计记录数：每个区间生成一个 SUM(CASE WHEN ...) 列 -->
+    <select id="countByRanges" resultType="java.util.Map">
+        SELECT
+        <foreach collection="ranges" item="r" index="i" separator=",">
+            SUM(CASE WHEN
+                <choose>
+                    <when test="mode == 'age'">#{refYear} - birth_year BETWEEN #{r.min} AND #{r.max}</when>
+                    <when test="mode == 'mileage'">total_mileage BETWEEN #{r.min} AND #{r.max}</when>
+                    <when test="mode == 'time'">total_travel_time BETWEEN #{r.min} AND #{r.max}</when>
+                </choose>
+                THEN 1 ELSE 0 END) AS c_${i}
+        </foreach>
+        FROM person
+    </select>
+</mapper>
