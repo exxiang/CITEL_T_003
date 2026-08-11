@@ -10,9 +10,10 @@ function addRangeRow(containerId) {
     row.innerHTML =
         '<span class="range-index"></span>' +
         '<input type="number" class="layui-input range-min" placeholder="最小值">' +
-        '<span style="margin: 0 6px;">~</span>' +
+        '<span class="range-sep">~</span>' +
         '<input type="number" class="layui-input range-max" placeholder="最大值">' +
-        '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs range-del" onclick="delRangeRow(this)">删除</button>';
+        '<button type="button" class="btn-delete range-del" onclick="delRangeRow(this)">' +
+        '<i class="layui-icon layui-icon-delete"></i>删除</button>';
     container.appendChild(row);
     refreshRangeIndex(container);
 }

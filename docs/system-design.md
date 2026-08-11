@@ -265,11 +265,12 @@ FROM person;
 
 ### 6.1 页面结构
 
-| 页面 | 说明 |
-| --- | --- |
-| `index.html` | 登录/首页入口 |
-| `pages/query.html` | 查询页：三个 Tab（按年龄 / 按里程 / 按时间） |
-| `pages/conditions.html` | 区间条件管理页（保存/加载/删除） |
+系统为单页应用（SPA），所有功能集中在 `index.html`：
+
+- 左侧导航栏：查询统计、区间管理，点击后切换内容面板。
+- 查询统计面板：三个 Tab（按年龄 / 按里程 / 按时间），支持已保存区间下拉选择回填。
+- 区间管理面板：已保存区间列表（加载 / 删除）。
+- 旧页面 `pages/query.html`、`pages/conditions.html` 保留为跳转到 `index.html` 的入口。
 
 查询页每个 Tab 包含三部分：
 
@@ -287,7 +288,8 @@ FROM person;
 
 - 定义/修改区间 → 点击"查询"→ 同时刷新列表与图表。
 - 点击"保存区间"→ 弹窗输入条件名称 → `POST /api/conditions`。
-- 在条件管理页选择已保存条件 → "加载"→ 回填区间编辑区并自动执行查询。
+- 查询页下拉选择已保存区间 → 回填三种模式的区间输入框，可编辑后点击"查询"。
+- 区间管理面板点击"加载"→ 切回查询面板并回填区间。
 
 ---
 
@@ -320,13 +322,13 @@ CITEL_T_003/
 │   └── util/                       # JwtUtil
 ├── src/main/resources/
 │   ├── application.yml             # 数据源 / 参考年 / 端口配置
-│   └── mapper/                     # Mapper XML
-└── src/main/webapp/                # Layui + ECharts 前端
-    ├── index.html
-    ├── pages/query.html            # 三模式查询页
-    ├── pages/conditions.html       # 条件管理页
-    ├── static/layui/  static/echarts/
-    └── js/  api.js range.js query.js chart.js conditions.js
+│   ├── mapper/                     # Mapper XML
+│   └── static/                     # Layui + ECharts 前端（单页）
+│       ├── index.html              # 单页应用入口（左侧导航 + 查询 / 区间管理）
+│       ├── css/app.css             # 企业级页面样式
+│       ├── js/                     # api.js app.js range.js query.js chart.js conditions.js
+│       ├── pages/                  # 旧页面，重定向到 index.html
+│       └── lib/                    # layui / echarts
 ```
 
 ---

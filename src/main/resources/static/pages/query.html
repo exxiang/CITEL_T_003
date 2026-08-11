@@ -2,80 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>查询统计 - 人员旅行数据</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="/lib/layui/css/layui.css">
-    <style>
-        body { padding: 15px; background: #f2f2f2; }
-        .range-box { border: 1px dashed #ccc; padding: 10px; margin: 10px 0; min-height: 40px; }
-        .range-row { margin-bottom: 8px; }
-        .range-row .range-index { display: inline-block; width: 70px; color: #666; }
-        .range-row input { width: 120px; display: inline-block; }
-        .range-row .layui-input { display: inline-block; }
-        .toolbar { margin: 10px 0; }
-        .switch-btn { margin-right: 6px; }
-        #chartBox { width: 100%; height: 420px; background: #fff; border: 1px solid #eee; display: none; }
-    </style>
+    <title>跳转中...</title>
+    <meta http-equiv="refresh" content="0;url=/index.html">
+    <script>location.replace('/index.html');</script>
 </head>
-<body>
-
-<div class="layui-card">
-    <div class="layui-card-header">人员旅行数据查询统计</div>
-    <div class="layui-card-body">
-        <div class="layui-tab layui-tab-brief" lay-filter="modeTab">
-            <ul class="layui-tab-title">
-                <li class="layui-this" data-mode="age">按年龄查询</li>
-                <li data-mode="mileage">按飞行里程查询</li>
-                <li data-mode="time">按飞行时间查询</li>
-            </ul>
-            <div class="layui-tab-content">
-                <div class="layui-tab-item layui-show">
-                    <div class="range-box" id="ageRangeRows"></div>
-                    <button type="button" class="layui-btn layui-btn-sm" onclick="addRangeRow('ageRangeRows')">添加年龄段</button>
-                    <span style="color:#999;margin-left:10px;">多个年龄段允许重叠</span>
-                </div>
-                <div class="layui-tab-item">
-                    <div class="range-box" id="mileageRangeRows"></div>
-                    <button type="button" class="layui-btn layui-btn-sm" onclick="addRangeRow('mileageRangeRows')">添加里程区间</button>
-                    <span style="color:#999;margin-left:10px;">多个里程区间允许重叠</span>
-                </div>
-                <div class="layui-tab-item">
-                    <div class="range-box" id="timeRangeRows"></div>
-                    <button type="button" class="layui-btn layui-btn-sm" onclick="addRangeRow('timeRangeRows')">添加时间区间</button>
-                    <span style="color:#999;margin-left:10px;">时间区间不允许重叠</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="toolbar">
-            <span>已保存区间：</span>
-            <div class="layui-form" style="display:inline-block;width:220px;margin-right:10px;vertical-align:middle;">
-                <select id="savedConditionSelect" lay-filter="savedConditionSelect" onchange="onSavedConditionSelect(this.value)">
-                    <option value="">选择已保存区间...</option>
-                </select>
-            </div>
-            <button class="layui-btn" onclick="doQuery()">查 询</button>
-            <button class="layui-btn layui-btn-normal" onclick="saveCondition()">保存当前区间</button>
-            <span style="margin-left: 20px;">展示方式：</span>
-            <button class="layui-btn layui-btn-sm switch-btn layui-btn-normal" data-type="list" onclick="switchView('list')">列表</button>
-            <button class="layui-btn layui-btn-sm switch-btn layui-btn-primary" data-type="bar" onclick="switchView('bar')">柱状图</button>
-            <button class="layui-btn layui-btn-sm switch-btn layui-btn-primary" data-type="pie" onclick="switchView('pie')">饼图</button>
-            <button class="layui-btn layui-btn-sm switch-btn layui-btn-primary" data-type="line" onclick="switchView('line')">折线图</button>
-        </div>
-
-        <div id="listBox">
-            <table id="personTable" lay-filter="personTable"></table>
-        </div>
-        <div id="chartBox"></div>
-    </div>
-</div>
-
-<script src="/lib/layui/layui.js"></script>
-<script src="/lib/echarts/echarts.min.js"></script>
-<script src="/js/api.js"></script>
-<script src="/js/range.js"></script>
-<script src="/js/chart.js"></script>
-<script src="/js/query.js"></script>
-</body>
+<body></body>
 </html>

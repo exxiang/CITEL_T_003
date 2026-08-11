@@ -1,0 +1,584 @@
+/* ==========================================================
+   人员旅行数据系统 - 企业级视觉规范
+   基于 Layui 覆盖实现，禁止使用色板外颜色
+   ========================================================== */
+
+/* ================= 全局设计 Token ================= */
+:root {
+    /* 色彩系统 */
+    --primary: #2563EB;              /* 主色（替换所有青色/亮蓝） */
+    --primary-hover: #1D4ED8;        /* 主色悬停 */
+    --success: #10B981;              /* 仅保存类正向操作 */
+    --danger: #EF4444;               /* 仅删除 */
+    --warning: #F59E0B;
+
+    --text-title: #111827;           /* 标题文字 */
+    --text-body: #374151;            /* 正文文字 */
+    --text-secondary: #6B7280;       /* 次要文字 */
+    --text-placeholder: #9CA3AF;     /* 占位符/禁用 */
+    --border-color: #E5E7EB;         /* 边框 */
+    --divider-color: #F3F4F6;        /* 分割线 */
+    --bg-page: #F5F7FA;              /* 页面背景 */
+    --bg-card: #FFFFFF;              /* 卡片背景 */
+    --bg-hover: #F5F7FA;             /* 悬停背景 */
+    --bg-selected: #EFF6FF;          /* 选中态背景（主色10%） */
+    --bg-striped: #FAFAFA;           /* 斑马纹 */
+    --bg-table-head: #F9FAFB;        /* 表头背景 */
+
+    /* 字体 */
+    --font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    --font-size-page-title: 18px;    /* 页面标题 / 600 */
+    --font-size-card-title: 15px;    /* 卡片标题 / 600 */
+    --font-size-body: 14px;          /* 正文/表格 / 400 */
+    --font-size-aux: 12px;           /* 辅助说明 / 400 */
+    --font-weight-title: 600;
+    --line-height-base: 1.5;
+
+    /* 间距（严格 4px 倍数） */
+    --spacing-page: 24px;            /* 页面内边距 */
+    --spacing-card: 24px;            /* 卡片内边距 */
+    --spacing-card-gap: 16px;        /* 卡片间距 */
+    --spacing-form: 16px;            /* 表单垂直间距 */
+    --spacing-btn-group: 12px;       /* 按钮组水平间距 */
+
+    /* 圆角与阴影 */
+    --radius-base: 8px;              /* 统一圆角 */
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --ring-primary: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+    /* 布局尺寸 */
+    --header-height: 56px;
+    --sidebar-width: 220px;
+    --menu-item-height: 44px;
+    --control-height: 36px;
+}
+
+/* ================= 基础 ================= */
+* { box-sizing: border-box; }
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-base);
+    color: var(--text-body);
+    background: var(--bg-page);
+}
+
+/* ================= 顶部 Header ================= */
+.app-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: var(--sidebar-width);
+    height: 100%;
+    padding: 0 24px;
+    background: var(--bg-card);
+    color: var(--text-title);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.app-logo .layui-icon { color: var(--primary); font-size: 22px; }
+
+.app-header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding-right: 24px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+/* ================= 左侧菜单 ================= */
+.app-sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0; bottom: 0;
+    z-index: 999;
+    width: var(--sidebar-width);
+    padding-top: 8px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border-color);
+}
+
+.side-menu-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--menu-item-height);
+    padding-left: 24px;
+    color: var(--text-body);
+    font-size: var(--font-size-body);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.side-menu-item .layui-icon { font-size: 16px; }
+
+.side-menu-item:hover { background: var(--bg-hover); color: var(--text-body); }
+
+.side-menu-item.active {
+    background: var(--bg-selected);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.side-menu-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+}
+
+/* ================= 内容区 ================= */
+.app-content {
+    position: fixed;
+    top: var(--header-height);
+    left: var(--sidebar-width);
+    right: 0; bottom: 0;
+    overflow-y: auto;
+    padding: var(--spacing-page);
+    background: var(--bg-page);
+}
+
+.panel { min-height: 100%; }
+
+/* ================= 卡片 ================= */
+.app-card {
+    padding: var(--spacing-card);
+    background: var(--bg-card);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-card);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.card-header .layui-icon { color: var(--primary); font-size: 18px; }
+
+.card-header .card-title {
+    font-size: var(--font-size-card-title);
+    font-weight: var(--font-weight-title);
+    color: var(--text-title);
+}
+
+/* ================= Tab（重写 Layui） ================= */
+.app-tab .layui-tab-title { border-bottom: 1px solid var(--border-color); }
+
+.app-tab .layui-tab-title li {
+    position: relative;
+    height: 44px;
+    line-height: 44px;
+    margin-right: 32px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-body);
+    transition: color 0.2s;
+}
+
+.app-tab .layui-tab-title li:hover { color: var(--text-title); }
+
+.app-tab .layui-tab-title .layui-this {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.app-tab .layui-tab-title .layui-this::after,
+.app-tab .layui-tab-title .layui-this:after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: auto; bottom: 0;
+    width: 100%;
+    height: 2px;
+    border: none;
+    border-radius: 0;
+    background: var(--primary);
+}
+
+.app-tab .layui-tab-content { padding: var(--spacing-form) 0 0; }
+
+/* ================= 区间编辑 ================= */
+.range-row {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    margin-bottom: 12px;
+    background: var(--bg-striped);
+    border-radius: var(--radius-base);
+}
+
+.range-row:last-child { margin-bottom: 0; }
+
+.range-index {
+    width: 60px;
+    margin-right: 12px;
+    text-align: right;
+    color: var(--text-body);
+    font-size: var(--font-size-body);
+}
+
+.range-row .layui-input {
+    width: 140px;
+    height: var(--control-height);
+    line-height: var(--control-height);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-body);
+    color: var(--text-body);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.range-row .layui-input:focus {
+    border-color: var(--primary);
+    box-shadow: var(--ring-primary);
+}
+
+.range-row .layui-input::placeholder { color: var(--text-placeholder); }
+
+.range-sep {
+    margin: 0 12px;
+    color: var(--text-placeholder);
+}
+
+.btn-delete {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    margin-left: 16px;
+    padding: 0 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-aux);
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.btn-delete:hover { background: var(--bg-hover); }
+.btn-delete:active { transform: translateY(1px); }
+
+.range-actions {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.btn-dashed {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 160px;
+    height: var(--control-height);
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-body);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.btn-dashed:hover { border-color: var(--primary); color: var(--primary); }
+.btn-dashed:active { transform: translateY(1px); }
+
+.range-tip {
+    margin-left: 12px;
+    font-size: var(--font-size-aux);
+    color: var(--text-placeholder);
+}
+
+/* ================= 按钮 ================= */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: var(--control-height);
+    padding: 0 20px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-body);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.btn .layui-icon { font-size: 14px; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled,
+.btn.is-loading { opacity: 0.7; cursor: not-allowed; pointer-events: none; }
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); box-shadow: var(--shadow-hover); }
+
+.btn-outline {
+    background: var(--bg-card);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline:hover { background: var(--bg-selected); }
+
+/* 区间管理操作列：文字链接按钮 */
+.link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    margin-right: 8px;
+    padding: 0 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-aux);
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.link-btn:hover { background: var(--bg-selected); }
+
+.link-btn-danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.link-btn-danger:hover { background: var(--bg-hover); }
+
+/* ================= 操作栏 ================= */
+.query-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-card-gap);
+    margin: 20px 0 var(--spacing-card-gap);
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-btn-group);
+}
+
+.toolbar-label {
+    font-size: var(--font-size-body);
+    color: var(--text-body);
+}
+
+.cond-select { width: 220px; }
+
+/* ================= 分段控制器（segmented） ================= */
+.seg-group {
+    display: flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+}
+
+.seg-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: var(--control-height);
+    background: var(--bg-card);
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-body);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.seg-item + .seg-item { border-left: 1px solid var(--border-color); }
+.seg-item:hover { background: var(--bg-hover); color: var(--text-title); }
+.seg-item.active { background: var(--primary); color: #fff; }
+
+/* ================= 下拉框（重写 Layui select） ================= */
+.cond-select .layui-form-select .layui-input {
+    height: var(--control-height);
+    line-height: var(--control-height);
+    padding: 0 15px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-body);
+    color: var(--text-body);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cond-select .layui-form-select .layui-input:focus {
+    border-color: var(--primary);
+    box-shadow: var(--ring-primary);
+}
+
+.cond-select .layui-form-select dl {
+    top: 40px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-hover);
+}
+
+.cond-select .layui-form-select dl dd {
+    line-height: 36px;
+    color: var(--text-body);
+    transition: background-color 0.2s;
+}
+
+.cond-select .layui-form-select dl dd:hover { background: var(--bg-hover); }
+
+.cond-select .layui-form-select dl dd.layui-this {
+    background: var(--bg-selected);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+/* ================= 表格（重写 Layui） ================= */
+.table-wrap {
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+}
+
+.table-wrap .layui-table-view { border: none; }
+.table-wrap .layui-table-view::after { display: none; }
+
+.table-wrap .layui-table-header { background: var(--bg-table-head); }
+
+.table-wrap .layui-table-header th {
+    height: 44px;
+    padding: 0 15px;
+    background: var(--bg-table-head);
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.table-wrap .layui-table-header .layui-table-cell {
+    height: 44px;
+    line-height: 44px;
+    font-size: var(--font-size-aux);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.table-wrap .layui-table-body td {
+    height: 48px;
+    padding: 0 15px;
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.table-wrap .layui-table-body .layui-table-cell {
+    height: 48px;
+    line-height: 48px;
+    font-size: var(--font-size-body);
+    color: var(--text-body);
+}
+
+.table-wrap .layui-table tbody tr { transition: background-color 0.2s; }
+.table-wrap .layui-table tbody tr:hover td { background: var(--bg-hover); }
+.table-wrap .layui-table tbody tr.layui-table-hover td { background: var(--bg-hover); }
+
+.table-wrap .layui-table tbody tr:nth-child(even) td { background: var(--bg-striped); }
+.table-wrap .layui-table tbody tr:nth-child(even):hover td { background: var(--bg-hover); }
+.table-wrap .layui-table tbody tr:nth-child(even).layui-table-hover td { background: var(--bg-hover); }
+
+/* 空状态 */
+.table-wrap .layui-table-body .layui-none {
+    padding: 60px 15px;
+    font-size: var(--font-size-body);
+    color: var(--text-placeholder);
+}
+
+.table-wrap .layui-table-body .layui-none::before {
+    content: "\e663";
+    font-family: "layui-icon";
+    display: block;
+    font-size: 44px;
+    line-height: 1;
+    margin-bottom: 12px;
+    color: var(--text-placeholder);
+}
+
+/* 创建时间列 */
+.cell-time {
+    font-size: var(--font-size-aux);
+    color: var(--text-secondary);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* 分页 */
+.layui-laypage a,
+.layui-laypage span {
+    color: var(--text-body);
+    border-color: var(--border-color);
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.layui-laypage a:hover { color: var(--primary); border-color: var(--primary); }
+
+.layui-laypage .layui-laypage-curr .layui-laypage-em { background-color: var(--primary); }
+.layui-laypage .layui-laypage-curr em { color: #fff; }
+
+/* ================= 区间管理工具栏 ================= */
+.cond-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-card-gap);
+}
+
+.cond-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ================= 图表容器 ================= */
+.chart-box {
+    width: 100%;
+    height: 420px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-base);
+    display: none;
+}
+
+/* ================= Layer 弹层 ================= */
+.layui-layer { border-radius: var(--radius-base); }
+
+.layui-layer-btn a { border-radius: var(--radius-base); }
+
+.layui-layer-btn a.layui-layer-btn0 {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.layui-layer-btn a.layui-layer-btn1 {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-body);
+}

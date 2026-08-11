@@ -61,6 +61,7 @@ layui.use(['table', 'layer', 'element', 'form'], function () {
         data: [],
         page: { limit: 20, limits: [10, 20] },
         request: { pageName: 'current', limitName: 'size' },
+        text: { none: '暂无符合条件的数据' },
         parseData: function (res) {
             if (res.code !== 0) {
                 layui.layer.msg(res.message || '请求失败', { icon: 2 });
@@ -101,7 +102,7 @@ function onSavedConditionSelect(value) {
 /** 根据当前模式显示/隐藏图形按钮（列表始终显示） */
 function updateViewButtons() {
     const cfg = modeCfg();
-    document.querySelectorAll('.switch-btn').forEach(function (b) {
+    document.querySelectorAll('.seg-item').forEach(function (b) {
         const type = b.getAttribute('data-type');
         b.style.display = (type === 'list' || cfg.charts.indexOf(type) >= 0) ? '' : 'none';
     });
@@ -130,11 +131,23 @@ async function doQuery() {
         layui.layer.msg('请先添加查询区间', { icon: 0 });
         return;
     }
+    const btn = document.getElementById('btnQuery');
+    const loadIndex = layui.layer.load(2, { shade: [0.08, '#fff'] });
+    if (btn) {
+        btn.classList.add('is-loading');
+        btn.disabled = true;
+    }
     try {
         reloadTable();
         await refreshStat();
     } catch (e) {
         // 错误提示已在 api 中处理
+    } finally {
+        layui.layer.close(loadIndex);
+        if (btn) {
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
+        }
     }
 }
 
@@ -178,13 +191,9 @@ function switchView(type) {
         }
     }
 
-    document.querySelectorAll('.switch-btn').forEach(function (b) {
-        b.classList.remove('layui-btn-normal');
+    document.querySelectorAll('.seg-item').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-type') === type);
     });
-    const btn = document.querySelector('.switch-btn[data-type="' + type + '"]');
-    if (btn) {
-        btn.classList.add('layui-btn-normal');
-    }
 }
 
 /** 保存当前三种模式的查询区间 */
@@ -193,6 +202,11 @@ function saveCondition() {
         layui.layer.close(index);
         if (!value) {
             return;
+        }
+        const btn = document.getElementById('btnSave');
+        if (btn) {
+            btn.classList.add('is-loading');
+            btn.disabled = true;
         }
         const payload = {
             conditionName: value,
@@ -203,7 +217,12 @@ function saveCondition() {
         api('/api/conditions', 'POST', payload).then(function (id) {
             layui.layer.msg('保存成功', { icon: 1 });
             loadConditionOptions(id);
-        }).catch(function () {});
+        }).catch(function () {}).finally(function () {
+            if (btn) {
+                btn.classList.remove('is-loading');
+                btn.disabled = false;
+            }
+        });
     });
 }
 
