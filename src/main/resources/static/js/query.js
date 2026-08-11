@@ -43,13 +43,16 @@ function buildWhere() {
     return where;
 }
 
-layui.use(['table', 'layer', 'element'], function () {
+layui.use(['table', 'layer', 'element', 'form'], function () {
     const table = layui.table;
+    const form = layui.form;
     window.__table = table;
 
     addRangeRow('ageRangeRows');
     addRangeRow('mileageRangeRows');
     addRangeRow('timeRangeRows');
+    updateViewButtons();
+    loadConditionOptions();
 
     table.render({
         elem: '#personTable',
@@ -66,6 +69,7 @@ layui.use(['table', 'layer', 'element'], function () {
             return { code: 0, msg: res.message, count: res.data.total, data: res.data.records };
         },
         cols: [[
+            { type: 'numbers', title: '序号', width: 80, fixed: 'left' },
             { field: 'id', title: '人员ID', width: 120 },
             { field: 'gender', title: '性别', width: 80, templet: function (d) { return d.gender === 1 ? '男' : '女'; } },
             { field: 'birthYear', title: '出生年份', width: 100 },
@@ -77,12 +81,31 @@ layui.use(['table', 'layer', 'element'], function () {
 
     layui.element.on('tab(modeTab)', function (data) {
         currentMode = ['age', 'mileage', 'time'][data.index];
+        updateViewButtons();
         switchView('list');
         reloadTable();
     });
 
-    loadSavedCondition();
+    form.on('select(savedConditionSelect)', function (data) {
+        onSavedConditionSelect(data.value);
+    });
 });
+
+/** 下拉框选中已保存区间（layui select 事件与原生 onchange 双保险） */
+function onSavedConditionSelect(value) {
+    if (value) {
+        loadConditionById(value);
+    }
+}
+
+/** 根据当前模式显示/隐藏图形按钮（列表始终显示） */
+function updateViewButtons() {
+    const cfg = modeCfg();
+    document.querySelectorAll('.switch-btn').forEach(function (b) {
+        const type = b.getAttribute('data-type');
+        b.style.display = (type === 'list' || cfg.charts.indexOf(type) >= 0) ? '' : 'none';
+    });
+}
 
 /** 刷新当前模式表格（无区间时展示空表，不发起请求） */
 function reloadTable() {
@@ -133,8 +156,9 @@ function switchView(type) {
     const chartBox = document.getElementById('chartBox');
 
     if (type === 'list') {
-        listBox.style.display = '';
+        listBox.style.display = 'block';
         chartBox.style.display = 'none';
+        viewType = 'list';
     } else {
         if (cfg.charts.indexOf(type) < 0) {
             const names = { bar: '柱状图', pie: '饼图', line: '折线图' };
@@ -143,10 +167,16 @@ function switchView(type) {
             return;
         }
         listBox.style.display = 'none';
-        chartBox.style.display = '';
-        renderChart(statData, type, cfg.title);
+        chartBox.style.display = 'block';
+        viewType = type;
+        const ranges = getRanges(cfg.container);
+        if (ranges.length === 0) {
+            layui.layer.msg('请先填写查询区间，再查看图表', { icon: 0 });
+            renderChart([], type, cfg.title);
+        } else {
+            refreshStat().catch(function () {});
+        }
     }
-    viewType = type;
 
     document.querySelectorAll('.switch-btn').forEach(function (b) {
         b.classList.remove('layui-btn-normal');
@@ -170,28 +200,53 @@ function saveCondition() {
             mileageRanges: getRanges('mileageRangeRows'),
             timeRanges: getRanges('timeRangeRows')
         };
-        api('/api/conditions', 'POST', payload).then(function () {
+        api('/api/conditions', 'POST', payload).then(function (id) {
             layui.layer.msg('保存成功', { icon: 1 });
+            loadConditionOptions(id);
         }).catch(function () {});
     });
 }
 
-/** 从条件管理页跳转而来时，加载并回填保存的区间 */
-async function loadSavedCondition() {
-    const params = new URLSearchParams(location.search);
-    const id = params.get('id');
-    if (!id) {
-        return;
+/** 加载已保存条件到下拉框；保存后调用可选中新条件，?id= 进入时自动加载 */
+async function loadConditionOptions(selectedId) {
+    const list = await api('/api/conditions').catch(function () { return []; });
+    const select = document.getElementById('savedConditionSelect');
+    const urlId = selectedId || new URLSearchParams(location.search).get('id') || '';
+    select.innerHTML = '<option value="">选择已保存区间...</option>' +
+        list.map(function (c) {
+            return '<option value="' + c.id + '">' + escapeHtml(c.conditionName) + '</option>';
+        }).join('');
+    select.value = urlId;
+    layui.form.render('select');
+    if (urlId && !selectedId) {
+        loadConditionById(urlId, true);
     }
+}
+
+/** 按ID加载已保存条件并回填区间输入框；autoQuery 为 true 时（条件管理页跳转）自动查询 */
+async function loadConditionById(id, autoQuery) {
     try {
         const cond = await api('/api/conditions/' + id);
         const param = typeof cond.queryParam === 'string' ? JSON.parse(cond.queryParam) : (cond.queryParam || {});
         fillRanges('ageRangeRows', param.ageRanges || []);
         fillRanges('mileageRangeRows', param.mileageRanges || []);
         fillRanges('timeRangeRows', param.timeRanges || []);
-        layui.layer.msg('已加载条件：' + cond.conditionName, { icon: 1 });
-        await doQuery();
+        if (autoQuery) {
+            layui.layer.msg('已加载条件：' + cond.conditionName, { icon: 1 });
+            await doQuery();
+        } else {
+            layui.layer.msg('已加载条件：' + cond.conditionName + '，可编辑后点击查询', { icon: 0 });
+        }
     } catch (e) {
         // 错误提示已在 api 中处理
     }
+}
+
+/** HTML 转义，防止条件名包含特殊字符时破坏下拉选项 */
+function escapeHtml(text) {
+    return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }

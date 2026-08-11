@@ -10,10 +10,13 @@ let chartInstance = null;
  * @param {string} title 图表标题
  */
 function renderChart(data, type, title) {
+    const el = document.getElementById('chartBox');
     if (!data || data.length === 0) {
+        if (chartInstance) {
+            chartInstance.clear();
+        }
         return;
     }
-    const el = document.getElementById('chartBox');
     if (!chartInstance) {
         chartInstance = echarts.init(el);
     }

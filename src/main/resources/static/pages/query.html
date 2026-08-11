@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>查询统计 - 人员旅行数据</title>
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="/lib/layui/css/layui.css">
     <style>
         body { padding: 15px; background: #f2f2f2; }
@@ -48,6 +49,12 @@
         </div>
 
         <div class="toolbar">
+            <span>已保存区间：</span>
+            <div class="layui-form" style="display:inline-block;width:220px;margin-right:10px;vertical-align:middle;">
+                <select id="savedConditionSelect" lay-filter="savedConditionSelect" onchange="onSavedConditionSelect(this.value)">
+                    <option value="">选择已保存区间...</option>
+                </select>
+            </div>
             <button class="layui-btn" onclick="doQuery()">查 询</button>
             <button class="layui-btn layui-btn-normal" onclick="saveCondition()">保存当前区间</button>
             <span style="margin-left: 20px;">展示方式：</span>
